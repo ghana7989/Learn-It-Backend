@@ -35,11 +35,13 @@ const userSchema = new mongoose.Schema(
 		stripeSession: {},
 	},
 	{
-		toJSON: true,
-		toObject: true,
-		timeStamps: true,
+		toJSON: {virtuals: true},
+		toObject: {virtuals: true},
+		timestamps: true,
 		versionKey: false,
 	},
 )
-
+userSchema.virtual('id').get(function () {
+	return this._id.toHexString()
+})
 export default mongoose.model('User', userSchema)

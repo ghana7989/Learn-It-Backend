@@ -8,20 +8,14 @@ export const hashPassword = plainPassword =>
 			if (err) {
 				reject(err)
 			}
-			bcrypt.hash(
-				plainPassword,
-				salt,
-				(err, hash) => {
-					if (err) {
-						reject(err)
-					}
-					resolve(hash)
-				},
-			)
+			bcrypt.hash(plainPassword, salt, (err, hash) => {
+				if (err) {
+					reject(err)
+				}
+				resolve(hash)
+			})
 		})
 	})
 
-export const comparePassword = (
-	plainPassword,
-	hashedPassword,
-) => bcrypt.compare(plainPassword, hashedPassword)
+export const comparePassword = (plainPassword, hashedPassword) =>
+	bcrypt.compare(plainPassword, hashedPassword)
