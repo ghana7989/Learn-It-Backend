@@ -73,3 +73,22 @@ export const login = async (req, res) => {
 		return res.status(400).json(error)
 	}
 }
+
+export const logout = async (req, res) => {
+	try {
+		res.clearCookie('token')
+		return res.json('Sign Out Success')
+	} catch (e) {
+		console.log('e: ', e)
+	}
+}
+
+export const currentUser = async (req, res) => {
+	try {
+		const user = await User.findById(req.user.id).select('-password')
+		console.log('user: ', user)
+		res.status(200).json({user})
+	} catch (error) {
+		console.log('error: ', error)
+	}
+}

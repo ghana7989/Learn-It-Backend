@@ -3,11 +3,15 @@ import {readdirSync} from 'fs'
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import csrf from 'csurf'
+import cookieParser from 'cookie-parser'
 const morgan = require('morgan')
 require('dotenv').config()
 
-const app = express()
+const csrfProtection = csrf({cookie: true})
 
+const app = express()
+app.use(cookieParser())
 // DB connection
 mongoose
 	.connect(process.env.DB_URI, {
@@ -27,10 +31,16 @@ app.use(express.json())
 app.use(morgan('dev'))
 
 // route
-readdirSync('./routes').map(r =>
-	app.use('/api', require(`./routes/${r}`)),
-)
+readdirSync('./routes').map(r => app.use('/api', require(`./routes/${r}`)))
 
+// CSRF
+app.use(csrfProtection)
+app.get('/api/csrf-token', (req, res) => {
+	res.json({
+		csrfToken: req.csrfToken(),
+	})
+})
+// app.use(cookieParser())
 // port
 const port = process.env.PORT || 8000
 
