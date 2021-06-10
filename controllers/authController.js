@@ -44,7 +44,6 @@ export const login = async (req, res) => {
 		const {email, password} = req.body
 		const user = await User.findOne({email})
 		if (!user) throw new Error('No User Found')
-		console.log('user: ', user)
 
 		// Checking Password
 		const isMatch = await comparePassword(password, user.password)
@@ -87,7 +86,7 @@ export const currentUser = async (req, res) => {
 	try {
 		const user = await User.findById(req.user.id).select('-password')
 		console.log('user: ', user)
-		res.status(200).json({user})
+		res.status(200).json(true)
 	} catch (error) {
 		console.log('error: ', error)
 	}
