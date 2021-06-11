@@ -91,3 +91,7 @@ export const currentUser = async (req, res) => {
 		console.log('error: ', error)
 	}
 }
+export const sendTestEmail = async () => {
+	//
+  
+}
