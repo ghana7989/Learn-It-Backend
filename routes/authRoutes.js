@@ -17,4 +17,5 @@ router.post('/login', login);
 router.get('/logout', logout);
 router.get( '/current-user', protect, currentUser );
 router.get( "/send-email", sendTestEmail);
+
 module.exports = router;
