@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
 		stripe_account_id: '',
 		stripe_seller: {},
 		stripeSession: {},
+		passwordResetCode: {
+			type: String,
+			default: '',
+		},
 	},
 	{
 		toJSON: {virtuals: true},

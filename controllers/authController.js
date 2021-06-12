@@ -42,10 +42,10 @@ export const register = async (req, res) => {
 		})
 		await user.save()
 
-		return res.status(201).json({ok: true, email, name})
+		res.status(201).json({ok: true, email, name})
 	} catch (error) {
 		console.log('error: ', error)
-		return res.status(400).json('Error Registering User')
+		res.status(400).json('Error Registering User')
 	}
 }
 
@@ -53,11 +53,11 @@ export const login = async (req, res) => {
 	try {
 		const {email, password} = req.body
 		const user = await User.findOne({email})
-		if (!user) throw new Error('No User Found')
+		if (!user) throw 'No User Found'
 
 		// Checking Password
 		const isMatch = await comparePassword(password, user.password)
-		if (!isMatch) throw new Error('Email Or Password is wrong')
+		if (!isMatch) throw 'Email Or Password is wrong'
 
 		// create a signed token
 		const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {
@@ -79,14 +79,16 @@ export const login = async (req, res) => {
 			role: user.role,
 		})
 	} catch (error) {
-		return res.status(400).json(error)
+		console.log(error)
+		// console.log(error.toString().split('at')[0])
+		res.status(400).json(error)
 	}
 }
 
 export const logout = async (req, res) => {
 	try {
 		res.clearCookie('token')
-		return res.json('Sign Out Success')
+		res.json('Sign Out Success')
 	} catch (e) {
 		console.log('e: ', e)
 	}
@@ -135,4 +137,83 @@ export const sendTestEmail = async (req, res) => {
 		.catch(err => {
 			console.log('err: ', err)
 		})
+}
+
+export const forgotPassword = async (req, res) => {
+	// Basically We are using the same route but with different parameters
+	// One request sends code and new password along with email
+	// We execute depending upon the number of params passed
+	try {
+		if ([...new Set(Object.keys(req.body))].length === 3) {
+			const {code, email, newPassword} = req.body
+			jwt.verify(code, process.env.JWT_SECRET, (err, _) => {
+				if (err) {
+					throw 'Reset Code Expired'
+				}
+			})
+			const hashedPassword = await hashPassword(newPassword)
+			const user = await User.findOneAndUpdate(
+				{email, passwordResetCode: code},
+				{
+					password: hashedPassword,
+					passwordResetCode: '',
+				},
+			)
+			res.status(200).json({ok: true})
+		} else {
+			const {email} = req.body
+			if (!email) throw new Error('Invalid Email Provided')
+			const code = jwt.sign(
+				{
+					email,
+				},
+				process.env.JWT_SECRET,
+				{
+					expiresIn: 600,
+				},
+			) // jwt sign
+			const user = await User.findOneAndUpdate(
+				{email},
+				{passwordResetCode: code},
+			)
+			if (!user) throw new Error('No User Found With the provided Email')
+
+			const params = {
+				Source: process.env.EMAIL_FROM,
+				Destination: {
+					ToAddresses: [email],
+				},
+				ReplyToAddresses: [process.env.EMAIL_FROM],
+				Message: {
+					Body: {
+						Html: {
+							Charset: 'UTF-8',
+							Data: `
+            <html>
+              <h1>Reset Password Code</h1>
+              <p>Please use the following code <h3 style="color:red">${code}</h3> to reset your password</p>
+            </html>
+          `,
+						},
+					},
+					Subject: {
+						Charset: 'UTF-8',
+						Data: 'Password reset code',
+					},
+				},
+			}
+			const emailSent = SES.sendEmail(params).promise()
+			emailSent
+				.then(data => {
+					res.status(200).json({ok: true})
+				})
+				.catch(err => {
+					console.log('err: ', err)
+					throw new Error('Error While Sending Secret Code. Please try again')
+				})
+		}
+	} catch (error) {
+		console.log('error FROM authController Line 144: ', error)
+		res.status(400).json(error)
+	}
 }
