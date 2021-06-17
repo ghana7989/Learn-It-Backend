@@ -1,5 +1,6 @@
 /** @format */
 import User from '../models/userSchema'
+import Course from '../models/courseSchema'
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 import queryString from 'query-string'
 
@@ -48,6 +49,7 @@ export const getAccountStatus = async (req, res) => {
 			},
 			{new: true},
 		).select('-password')
+		res.clearCookie('token')
 		res.status(200).json(statusUpdated)
 	} catch (error) {
 		console.log('error: ', error)
@@ -65,5 +67,17 @@ export const currentInstructor = async (req, res) => {
 		}
 	} catch (error) {
 		console.log('error: ', error)
+	}
+}
+
+export const instructorCourses = async (req, res) => {
+	try {
+		const courses = await Course.find({instructor: req.user.id}).sort({
+			createdAt: -1,
+		})
+		res.status(200).json(courses)
+	} catch (error) {
+		console.log(error)
+		res.status(400).json(error)
 	}
 }

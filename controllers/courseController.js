@@ -59,3 +59,17 @@ export const createCourse = async (req, res) => {
 		res.status(400).json(error)
 	}
 }
+
+export const getCourse = async (req, res) => {
+	console.log('req.params.slug: ', req.params.slug)
+	try {
+		const course = await Course.findOne({slug: req.params.slug}).populate(
+			'instructor',
+		)
+		if (!course) throw 'No Such Course Exists'
+		res.status(200).json(course)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}

@@ -11,7 +11,6 @@ const lessonSchema = new mongoose.Schema(
 		},
 		slug: {
 			type: String,
-			unique: true,
 		},
 		content: {
 			type: {},
@@ -45,7 +44,6 @@ const courseSchema = new mongoose.Schema(
 		},
 		slug: {
 			type: String,
-			unique: true,
 		},
 		description: {
 			type: {},
