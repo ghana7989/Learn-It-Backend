@@ -1,3 +1,4 @@
+import {readFileSync} from 'fs'
 import AWS from 'aws-sdk'
 import {nanoid} from 'nanoid'
 import Course from '../models/courseSchema'
@@ -68,6 +69,59 @@ export const getCourse = async (req, res) => {
 		)
 		if (!course) throw 'No Such Course Exists'
 		res.status(200).json(course)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+
+export const postCourse = async (req, res) => {
+	try {
+		const {video} = req.files
+		if (!video) throw 'No Video'
+		const params = {
+			Bucket: 'learn-it-bucket',
+			Key: `${nanoid()}.${video.type.split('/')[1]}`, // video/mp4
+			Body: readFileSync(video.path),
+			ACL: 'public-read',
+			ContentType: video.type,
+		}
+		// upload to S3
+		S3.upload(params, (err, data) => {
+			if (err) {
+				console.log('err: ', err)
+				req.sendStatus(400)
+			}
+			console.log('data: ', data)
+			res.json(data)
+		})
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+
+export const addLesson = async (req, res) => {
+	try {
+		const {slug, instructorId} = req.params
+		if (req.user.id !== instructorId) throw 'Not Authorized'
+		console.log('req.body: ', req.body)
+		const {title, description, video} = req.body
+		const updatedCourse = await Course.findOneAndUpdate(
+			{slug},
+			{
+				$push: {
+					lessons: {
+						title,
+						description,
+						video,
+						slug: slugify(title),
+					},
+				},
+			},
+			{new: true},
+		).populate('instructor')
+		res.json(updatedCourse)
 	} catch (error) {
 		console.log('error: ', error)
 		res.status(400).json(error)

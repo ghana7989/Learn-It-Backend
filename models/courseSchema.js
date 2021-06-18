@@ -12,11 +12,11 @@ const lessonSchema = new mongoose.Schema(
 		slug: {
 			type: String,
 		},
-		content: {
+		description: {
 			type: {},
 			minlength: 320,
 		},
-		video_link: {},
+		video: {},
 		free_preview: {
 			type: Boolean,
 			default: false,
