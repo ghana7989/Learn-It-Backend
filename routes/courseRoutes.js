@@ -9,8 +9,11 @@ import {
 	uploadImage,
 	createCourse,
 	getCourse,
-	postCourse,
+	uploadVideo,
 	addLesson,
+	updateCourse,
+	removeLesson,
+	removeVideo,
 } from '../controllers/courseController.js'
 
 const app = express()
@@ -21,13 +24,21 @@ router.post('/course/upload-image', uploadImage)
 
 // Course
 router.post('/course', protect, ifInstructor, createCourse)
+router.put('/course/:slug', protect, ifInstructor, updateCourse)
 router.get('/course/:slug', getCourse)
 router.post(
 	'/course/video-upload',
 	protect,
 	ifInstructor,
 	formidableMiddleware(),
-	postCourse,
+	uploadVideo,
+)
+router.post(
+	'/course/remove-video/:courseId',
+	protect,
+	ifInstructor,
+	formidableMiddleware(),
+	removeVideo,
 )
 router.post(
 	'/course/lesson/:slug/:instructorId',
@@ -35,5 +46,6 @@ router.post(
 	ifInstructor,
 	addLesson,
 )
+router.put('/course/:slug/:lessonId', protect, ifInstructor, removeLesson)
 
 module.exports = router

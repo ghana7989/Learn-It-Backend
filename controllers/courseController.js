@@ -75,38 +75,13 @@ export const getCourse = async (req, res) => {
 	}
 }
 
-export const postCourse = async (req, res) => {
-	try {
-		const {video} = req.files
-		if (!video) throw 'No Video'
-		const params = {
-			Bucket: 'learn-it-bucket',
-			Key: `${nanoid()}.${video.type.split('/')[1]}`, // video/mp4
-			Body: readFileSync(video.path),
-			ACL: 'public-read',
-			ContentType: video.type,
-		}
-		// upload to S3
-		S3.upload(params, (err, data) => {
-			if (err) {
-				console.log('err: ', err)
-				req.sendStatus(400)
-			}
-			console.log('data: ', data)
-			res.json(data)
-		})
-	} catch (error) {
-		console.log('error: ', error)
-		res.status(400).json(error)
-	}
-}
-
 export const addLesson = async (req, res) => {
 	try {
 		const {slug, instructorId} = req.params
 		if (req.user.id !== instructorId) throw 'Not Authorized'
 		console.log('req.body: ', req.body)
 		const {title, description, video} = req.body
+		console.log('video: ', video)
 		const updatedCourse = await Course.findOneAndUpdate(
 			{slug},
 			{
@@ -122,6 +97,83 @@ export const addLesson = async (req, res) => {
 			{new: true},
 		).populate('instructor')
 		res.json(updatedCourse)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+
+export const updateCourse = async (req, res) => {
+	const {slug} = req.params
+	const course = await Course.findOne({slug}).populate('instructor')
+	{
+		// Checking if the instructor is is the owner of the course
+		if (req.user.id !== course.instructor.id)
+			return res.status(400).json('Not Authorized')
+	}
+	const updatedCourse = await Course.findOneAndUpdate({slug}, req.body, {
+		new: true,
+	})
+	res.status(200).json(updatedCourse)
+}
+
+export const removeLesson = async (req, res) => {
+	try {
+		const {slug, lessonId} = req.params
+		const course = await Course.findOne({slug}).populate('instructor')
+		if (req.user.id !== course.instructor.id) throw 'Not Authorized'
+		const temp = await Course.findByIdAndUpdate(
+			course.id,
+			{
+				$pull: {lessons: {_id: lessonId}},
+			},
+			{new: true},
+		)
+		console.log('temp: ', temp)
+		res.sendStatus(200)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+export const uploadVideo = async (req, res) => {
+	try {
+		const {video} = req.files
+		if (!video) throw 'No Video'
+		const params = {
+			Bucket: 'learn-it-bucket',
+			Key: `video-+${nanoid()}.${video.type.split('/')[1]}`, // video/mp4
+			Body: readFileSync(video.path),
+			ACL: 'public-read',
+			ContentType: video.type,
+		}
+		// upload to S3
+		S3.upload(params, (err, data) => {
+			if (err) {
+				console.log('err: ', err)
+				req.sendStatus(400)
+			}
+			console.log('data: ', data)
+			res.status(200).json(data)
+		})
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+
+export const removeVideo = async (req, res) => {
+	try {
+		const {Bucket, Key} = req.body
+		console.log('{Bucket, Key}: ', {Bucket, Key})
+		S3.deleteObject({Bucket, Key}, (err, data) => {
+			if (err) {
+				console.log(err)
+				res.sendStatus(400)
+			}
+			console.log(data) // data.Key
+			res.send({ok: true})
+		})
 	} catch (error) {
 		console.log('error: ', error)
 		res.status(400).json(error)
