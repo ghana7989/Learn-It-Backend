@@ -14,6 +14,7 @@ import {
 	updateCourse,
 	removeLesson,
 	removeVideo,
+	updateLesson,
 } from '../controllers/courseController.js'
 
 const app = express()
@@ -33,18 +34,19 @@ router.post(
 	formidableMiddleware(),
 	uploadVideo,
 )
-router.post(
-	'/course/remove-video/:courseId',
-	protect,
-	ifInstructor,
-	formidableMiddleware(),
-	removeVideo,
-)
+router.post('/course/remove-video', protect, ifInstructor, removeVideo)
 router.post(
 	'/course/lesson/:slug/:instructorId',
 	protect,
 	ifInstructor,
 	addLesson,
+)
+// update
+router.put(
+	'/course/lesson/:courseId/:lessonId',
+	protect,
+	ifInstructor,
+	updateLesson,
 )
 router.put('/course/:slug/:lessonId', protect, ifInstructor, removeLesson)
 

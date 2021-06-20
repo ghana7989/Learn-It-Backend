@@ -153,7 +153,6 @@ export const uploadVideo = async (req, res) => {
 				console.log('err: ', err)
 				req.sendStatus(400)
 			}
-			console.log('data: ', data)
 			res.status(200).json(data)
 		})
 	} catch (error) {
@@ -165,15 +164,40 @@ export const uploadVideo = async (req, res) => {
 export const removeVideo = async (req, res) => {
 	try {
 		const {Bucket, Key} = req.body
-		console.log('{Bucket, Key}: ', {Bucket, Key})
 		S3.deleteObject({Bucket, Key}, (err, data) => {
 			if (err) {
 				console.log(err)
 				res.sendStatus(400)
 			}
-			console.log(data) // data.Key
-			res.send({ok: true})
+
+			res.status(200).json({ok: true})
 		})
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json(error)
+	}
+}
+
+export const updateLesson = async (req, res) => {
+	try {
+		const {courseId, lessonId} = req.params
+		const {title, description, video, free_preview} = req.body
+		const courseFound = await Course.findById(courseId).populate('instructor')
+		if (req.user.id !== courseFound.instructor.id) {
+			throw 'Not Authorized To UpdateLesson'
+		}
+		const updated = await Course.updateOne(
+			{'lessons._id': lessonId},
+			{
+				$set: {
+					'lessons.$.title': title,
+					'lessons.$.description': description,
+					'lessons.$.video': video,
+					'lessons.$.free_preview': free_preview,
+				},
+			},
+		)
+		res.json({ok: true})
 	} catch (error) {
 		console.log('error: ', error)
 		res.status(400).json(error)
