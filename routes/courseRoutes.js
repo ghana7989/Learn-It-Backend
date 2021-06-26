@@ -15,10 +15,15 @@ import {
 	removeLesson,
 	removeVideo,
 	updateLesson,
+	unPublishCourse,
+	publishCourse,
+	getCourses,
 } from '../controllers/courseController.js'
 
 const app = express()
 app.use(protect)
+
+router.get('/courses', getCourses)
 
 // Image
 router.post('/course/upload-image', uploadImage)
@@ -40,6 +45,14 @@ router.post(
 	protect,
 	ifInstructor,
 	addLesson,
+)
+// Publish and UnPublish
+router.put('/course/publish/:courseId', protect, ifInstructor, publishCourse)
+router.put(
+	'/course/unpublish/:courseId',
+	protect,
+	ifInstructor,
+	unPublishCourse,
 )
 // update
 router.put(

@@ -203,3 +203,45 @@ export const updateLesson = async (req, res) => {
 		res.status(400).json(error)
 	}
 }
+
+export const publishCourse = async (req, res) => {
+	console.log('I am Working')
+	try {
+		const {courseId} = req.params
+
+		const updatedCourse = await Course.findByIdAndUpdate(
+			courseId,
+			{published: true},
+			{new: true},
+		)
+
+		res.status(200).json(updatedCourse)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json('Publishing Course Failed')
+	}
+}
+
+export const unPublishCourse = async (req, res) => {
+	try {
+		const {courseId} = req.params
+
+		const updatedCourse = await Course.findByIdAndUpdate(
+			courseId,
+			{published: false},
+			{new: true},
+		)
+		res.status(200).json(updatedCourse)
+	} catch (error) {
+		console.log('error: ', error)
+		res.status(400).json('unPublishing Course Failed')
+	}
+}
+
+export const getCourses = async (req, res) => {
+	const allCourses = await Course.find({published: true}).populate(
+		'instructor',
+		{id: 1, name: 1},
+	)
+	res.status(200).json(allCourses)
+}
