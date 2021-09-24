@@ -914,10 +914,10 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-stripe@^8.154.0:
-  version "8.154.0"
-  resolved "https://registry.yarnpkg.com/stripe/-/stripe-8.154.0.tgz#c0b577c3fc109948cf55e0007087675b8174939f"
-  integrity sha512-e+FQ+2PqDVXsm4MBXUDkQSnYqyJWdRr6JJvFI0QPCrgsi4qWWutFEyznGgplSgSdD3gMqgAeB+qhqo6pGSYMwQ==
+stripe@^8.174.0:
+  version "8.176.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-8.176.0.tgz#2f4980ab49acbfe6d67ecaddd54c05e20de9532c"
+  integrity sha512-0KCDo8TWFgeNWU7cPaqdjO2u2OSth0cmWYZmA7xsuxRCk7/lgWbJ/UbeSphx74cCIjFCmGuzDoNuNxqon9lEbg==
   dependencies:
     "@types/node" ">=8.1.0"
     qs "^6.6.0"
